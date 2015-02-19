@@ -1,0 +1,110 @@
+#!/bin/bash
+#sbinst: Convenient script automagically downloads and installs slackbuilds. 
+#TODO: Dependency handling
+#This code is public domain
+
+SLACKVER=14.1
+
+if [ $# -eq 0 ] 
+then
+	echo "Error: no arguments given."
+	exit 1
+elif [ $# -eq 1 ] 
+then
+	PROG=$1
+elif [ $# -eq 2 ] 
+then
+	CATEG=$1
+	PROG=$2
+else
+	echo "Error: too many arguments"
+	exit 1
+fi
+
+echo
+echo '*****************************'
+echo Fetching slackbuild archive...
+echo '*****************************'
+echo
+echo
+
+if [ "$CATEG" =  "" ] 
+then
+	#brute-force attempt to download from *each* category if none is given; awful but functional 8|
+	for cat in academic accessibility audio business desktop development games gis graphics ham haskell libraries misc multimedia network office perl python ruby system
+	do
+		wget --quiet "http://www.slackbuilds.org/slackbuilds/$SLACKVER/$cat/"$PROG".tar.gz"
+	done
+else
+	wget --quiet "http://www.slackbuilds.org/slackbuilds/$SLACKVER/$CATEG/"$PROG".tar.gz"
+fi
+
+if [ -e $PROG".tar.gz" ]
+then
+	tar xf "$PROG".tar.gz
+else
+	echo "Error: slackbuild archive unavailable"
+fi
+
+
+echo
+echo '***********************'
+echo Checking dependencies...
+echo '***********************'
+echo
+echo
+
+
+export "`cat $PROG/$PROG.info | grep 'REQUIRES'`"
+#remove double quotes
+REQUIRES=`echo $REQUIRES  | sed -e 's/^"//' -e 's/"$//'`
+
+for dep in $REQUIRES
+do
+	echo Dependency $dep detected. Install as well? '(y/n)':
+	read choice
+
+	if [ $choice = "y" ]
+	then
+		sbinst $dep
+	else
+		echo Okay, skipping $dep.
+	fi
+done
+
+
+echo
+echo '**********************'
+echo Fetching source code...
+echo '**********************'
+echo
+echo
+
+
+export `cat $PROG/$PROG.info | grep 'DOWNLOAD'`
+#remove double quotes from download link so wget won't barf
+DOWNLOAD=`echo $DOWNLOAD | sed -e 's/^"//' -e 's/"$//'`
+
+#fetch the source archive 
+wget --quiet -P ./$PROG "$DOWNLOAD"
+
+echo
+echo '**************************'
+echo Running slackbuild script...
+echo '**************************'
+echo
+echo
+
+(cd $PROG && ./$PROG.SlackBuild)
+
+echo
+echo '******************************'
+echo Installing slackbuild package...
+echo '******************************'
+echo 
+echo
+
+#packages are dumped in temp by default.
+#Using a wildcard may not be the greatest idea if multiple arch/versions
+#end up in the same directory...but I'm lazy :P
+installpkg "/tmp/$PROG*.tgz"
