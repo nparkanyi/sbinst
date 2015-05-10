@@ -1,18 +1,18 @@
 #!/bin/bash
-#sbinst: Convenient script automagically downloads and installs slackbuilds. 
+#sbinst: Convenient script automagically downloads and installs slackbuilds.
 #TODO: Dependency handling
 #This code is public domain
 
 SLACKVER=14.1
 
-if [ $# -eq 0 ] 
+if [ $# -eq 0 ]
 then
 	echo "Error: no arguments given."
 	exit 1
-elif [ $# -eq 1 ] 
+elif [ $# -eq 1 ]
 then
 	PROG=$1
-elif [ $# -eq 2 ] 
+elif [ $# -eq 2 ]
 then
 	CATEG=$1
 	PROG=$2
@@ -28,7 +28,7 @@ echo '*****************************'
 echo
 echo
 
-if [ "$CATEG" =  "" ] 
+if [ "$CATEG" =  "" ]
 then
 	#brute-force attempt to download from *each* category if none is given; awful but functional 8|
 	for cat in academic accessibility audio business desktop development games gis graphics ham haskell libraries misc multimedia network office perl python ruby system
@@ -85,7 +85,7 @@ export `cat $PROG/$PROG.info | grep 'DOWNLOAD'`
 #remove double quotes from download link so wget won't barf
 DOWNLOAD=`echo $DOWNLOAD | sed -e 's/^"//' -e 's/"$//'`
 
-#fetch the source archive 
+#fetch the source archive
 wget --quiet -P ./$PROG "$DOWNLOAD"
 
 echo
@@ -101,7 +101,7 @@ echo
 echo '******************************'
 echo Installing slackbuild package...
 echo '******************************'
-echo 
+echo
 echo
 
 #packages are dumped in temp by default.
