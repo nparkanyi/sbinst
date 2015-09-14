@@ -1,6 +1,5 @@
 #!/bin/bash
 #sbinst: Convenient script automagically downloads and installs slackbuilds.
-#TODO: Dependency handling
 #This code is public domain
 
 SLACKVER=14.1
@@ -44,6 +43,7 @@ then
 	tar xf "$PROG".tar.gz
 else
 	echo "Error: slackbuild archive unavailable"
+	exit 1
 fi
 
 
